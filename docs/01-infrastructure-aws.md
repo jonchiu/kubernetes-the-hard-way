@@ -63,19 +63,58 @@ aws ec2 associate-dhcp-options \
 
 ### Subnets
 
-Create a subnet for the Kubernetes cluster:
+Create a subnet for the Kubernetes cluster for each availability zone:
 
 ```
-SUBNET_ID=$(aws ec2 create-subnet \
+AWS_AZ_A=us-west-2a
+```
+```
+AWS_AZ_B=us-west-2b
+```
+```
+AWS_AZ_C=us-west-2c
+```
+
+```
+SUBNET_A_ID=$(aws ec2 create-subnet \
   --vpc-id ${VPC_ID} \
-  --cidr-block 10.240.0.0/24 | \
+  --cidr-block 10.240.0.0/24 \
+  --availability-zone ${AWS_AZ_A} | \
   jq -r '.Subnet.SubnetId')
 ```
 
 ```
 aws ec2 create-tags \
-  --resources ${SUBNET_ID} \
-  --tags Key=Name,Value=kubernetes
+  --resources ${SUBNET_A_ID} \
+  --tags Key=Name,Value=kubernetes-${AWS_AZ_A}
+```
+
+```
+SUBNET_B_ID=$(aws ec2 create-subnet \
+  --vpc-id ${VPC_ID} \
+  --cidr-block 10.240.1.0/24 \
+  --availability-zone ${AWS_AZ_B} | \
+  jq -r '.Subnet.SubnetId')
+```
+
+```
+aws ec2 create-tags \
+  --resources ${SUBNET_B_ID} \
+  --tags Key=Name,Value=kubernetes-${AWS_AZ_B}
+```
+
+```
+SUBNET_C_ID=$(aws ec2 create-subnet \
+  --vpc-id ${VPC_ID} \
+  --cidr-block 10.240.2.0/24 \
+  --availability-zone ${AWS_AZ_C} | \
+  jq -r '.Subnet.SubnetId')
+```
+
+```
+aws ec2 create-tags \
+  --resources ${SUBNET_C_ID} \
+  --tags Key=Name,Value=kubernetes--${AWS_AZ_C}
 ```
 
 ### Internet Gateways
@@ -114,7 +153,19 @@ aws ec2 create-tags \
 ```
 aws ec2 associate-route-table \
   --route-table-id ${ROUTE_TABLE_ID} \
-  --subnet-id ${SUBNET_ID}
+  --subnet-id ${SUBNET_A_ID}
+```
+
+```
+aws ec2 associate-route-table \
+  --route-table-id ${ROUTE_TABLE_ID} \
+  --subnet-id ${SUBNET_B_ID}
+```
+
+```
+aws ec2 associate-route-table \
+  --route-table-id ${ROUTE_TABLE_ID} \
+  --subnet-id ${SUBNET_C_ID}
 ```
 
 ```
@@ -157,6 +208,22 @@ aws ec2 authorize-security-group-ingress \
 ```
 aws ec2 authorize-security-group-ingress \
   --group-id ${SECURITY_GROUP_ID} \
+  --protocol all \
+  --port 0-65535 \
+  --cidr 10.240.1.0/16
+```
+
+```
+aws ec2 authorize-security-group-ingress \
+  --group-id ${SECURITY_GROUP_ID} \
+  --protocol all \
+  --port 0-65535 \
+  --cidr 10.240.2.0/16
+```
+
+```
+aws ec2 authorize-security-group-ingress \
+  --group-id ${SECURITY_GROUP_ID} \
   --protocol tcp \
   --port 22 \
   --cidr 0.0.0.0/0
@@ -183,9 +250,25 @@ An ELB will be used to load balance traffic across the Kubernetes control plane.
 
 ```
 aws elb create-load-balancer \
-  --load-balancer-name kubernetes \
+  --load-balancer-name kubernetes-us-west-2a \
   --listeners "Protocol=TCP,LoadBalancerPort=6443,InstanceProtocol=TCP,InstancePort=6443" \
-  --subnets ${SUBNET_ID} \
+  --subnets ${SUBNET_A_ID} \
+  --security-groups ${SECURITY_GROUP_ID}
+```
+
+```
+aws elb create-load-balancer \
+  --load-balancer-name kubernetes-us-west-2b \
+  --listeners "Protocol=TCP,LoadBalancerPort=6443,InstanceProtocol=TCP,InstancePort=6443" \
+  --subnets ${SUBNET_B_ID} \
+  --security-groups ${SECURITY_GROUP_ID}
+```
+
+```
+aws elb create-load-balancer \
+  --load-balancer-name kubernetes-us-west-2c \
+  --listeners "Protocol=TCP,LoadBalancerPort=6443,InstanceProtocol=TCP,InstancePort=6443" \
+  --subnets ${SUBNET_C_ID} \
   --security-groups ${SECURITY_GROUP_ID}
 ```
 
@@ -237,7 +320,7 @@ aws iam put-role-policy \
 
 ```
 aws iam create-instance-profile \
-  --instance-profile-name kubernetes 
+  --instance-profile-name kubernetes
 ```
 
 ```
@@ -251,7 +334,7 @@ aws iam add-role-to-instance-profile \
 Use the [Ubuntu Amazon EC2 AMI Locator](https://cloud-images.ubuntu.com/locator/ec2/) to find the right image-id for your zone. This guide assumes the `us-west-2` zone.
 
 ```
-IMAGE_ID="ami-746aba14"
+IMAGE_ID="ami-9ee24ffe"
 ```
 
 ### Generate A SSH Key Pair
@@ -266,7 +349,7 @@ chmod 600 ~/.ssh/kubernetes_the_hard_way
 ```
 
 ```
-ssh-add ~/.ssh/kubernetes_the_hard_way 
+ssh-add ~/.ssh/kubernetes_the_hard_way
 ```
 
 #### SSH Access
@@ -297,9 +380,9 @@ CONTROLLER_0_INSTANCE_ID=$(aws ec2 run-instances \
   --count 1 \
   --key-name kubernetes \
   --security-group-ids ${SECURITY_GROUP_ID} \
-  --instance-type t2.small \
+  --instance-type m3.medium \
   --private-ip-address 10.240.0.10 \
-  --subnet-id ${SUBNET_ID} | \
+  --subnet-id ${SUBNET_A_ID} | \
   jq -r '.Instances[].InstanceId')
 ```
 
@@ -313,7 +396,7 @@ aws ec2 modify-instance-attribute \
 aws ec2 create-tags \
   --resources ${CONTROLLER_0_INSTANCE_ID} \
   --tags Key=Name,Value=controller0
-``` 
+```
 
 ```
 CONTROLLER_1_INSTANCE_ID=$(aws ec2 run-instances \
@@ -323,9 +406,9 @@ CONTROLLER_1_INSTANCE_ID=$(aws ec2 run-instances \
   --count 1 \
   --key-name kubernetes \
   --security-group-ids ${SECURITY_GROUP_ID} \
-  --instance-type t2.small \
-  --private-ip-address 10.240.0.11 \
-  --subnet-id ${SUBNET_ID} | \
+  --instance-type m3.medium \
+  --private-ip-address 10.240.1.10 \
+  --subnet-id ${SUBNET_B_ID} | \
   jq -r '.Instances[].InstanceId')
 ```
 
@@ -339,7 +422,7 @@ aws ec2 modify-instance-attribute \
 aws ec2 create-tags \
   --resources ${CONTROLLER_1_INSTANCE_ID} \
   --tags Key=Name,Value=controller1
-``` 
+```
 
 ```
 CONTROLLER_2_INSTANCE_ID=$(aws ec2 run-instances \
@@ -349,9 +432,9 @@ CONTROLLER_2_INSTANCE_ID=$(aws ec2 run-instances \
   --count 1 \
   --key-name kubernetes \
   --security-group-ids ${SECURITY_GROUP_ID} \
-  --instance-type t2.small \
-  --private-ip-address 10.240.0.12 \
-  --subnet-id ${SUBNET_ID} | \
+  --instance-type m3.medium \
+  --private-ip-address 10.240.2.10 \
+  --subnet-id ${SUBNET_C_ID} | \
   jq -r '.Instances[].InstanceId')
 ```
 
@@ -365,7 +448,7 @@ aws ec2 modify-instance-attribute \
 aws ec2 create-tags \
   --resources ${CONTROLLER_2_INSTANCE_ID} \
   --tags Key=Name,Value=controller2
-``` 
+```
 
 #### Kubernetes Workers
 
@@ -377,9 +460,9 @@ WORKER_0_INSTANCE_ID=$(aws ec2 run-instances \
   --count 1 \
   --key-name kubernetes \
   --security-group-ids ${SECURITY_GROUP_ID} \
-  --instance-type t2.small \
+  --instance-type r3.8xlarge \
   --private-ip-address 10.240.0.20 \
-  --subnet-id ${SUBNET_ID} | \
+  --subnet-id ${SUBNET_A_ID} | \
   jq -r '.Instances[].InstanceId')
 ```
 
@@ -403,9 +486,9 @@ WORKER_1_INSTANCE_ID=$(aws ec2 run-instances \
   --count 1 \
   --key-name kubernetes \
   --security-group-ids ${SECURITY_GROUP_ID} \
-  --instance-type t2.small \
-  --private-ip-address 10.240.0.21 \
-  --subnet-id ${SUBNET_ID} | \
+  --instance-type r3.8xlarge \
+  --private-ip-address 10.240.1.20 \
+  --subnet-id ${SUBNET_B_ID} | \
   jq -r '.Instances[].InstanceId')
 ```
 
@@ -429,9 +512,9 @@ WORKER_2_INSTANCE_ID=$(aws ec2 run-instances \
   --count 1 \
   --key-name kubernetes \
   --security-group-ids ${SECURITY_GROUP_ID} \
-  --instance-type t2.small \
-  --private-ip-address 10.240.0.22 \
-  --subnet-id ${SUBNET_ID} | \
+  --instance-type r3.8xlarge \
+  --private-ip-address 10.240.2.20 \
+  --subnet-id ${SUBNET_C_ID} | \
   jq -r '.Instances[].InstanceId')
 ```
 
@@ -456,10 +539,10 @@ aws ec2 describe-instances \
   jq -j '.Reservations[].Instances[] | .InstanceId, "  ", .Placement.AvailabilityZone, "  ", .PrivateIpAddress, "  ", .PublicIpAddress, "\n"'
 ```
 ```
-i-ae714f73  us-west-2c  10.240.0.11  XX.XX.XX.XXX
-i-f4714f29  us-west-2c  10.240.0.21  XX.XX.XXX.XXX
-i-f6714f2b  us-west-2c  10.240.0.12  XX.XX.XX.XX
-i-e26e503f  us-west-2c  10.240.0.22  XX.XX.XXX.XXX
-i-e8714f35  us-west-2c  10.240.0.10  XX.XX.XXX.XXX
-i-78704ea5  us-west-2c  10.240.0.20  XX.XX.XXX.XXX
+i-ae714f73  us-west-2a  10.240.0.10  XX.XX.XX.XXX
+i-f4714f29  us-west-2a  10.240.0.20  XX.XX.XXX.XXX
+i-f6714f2b  us-west-2b  10.240.1.10  XX.XX.XX.XX
+i-e26e503f  us-west-2b  10.240.1.20  XX.XX.XXX.XXX
+i-e8714f35  us-west-2c  10.240.2.10  XX.XX.XXX.XXX
+i-78704ea5  us-west-2c  10.240.2.20  XX.XX.XXX.XXX
 ```
