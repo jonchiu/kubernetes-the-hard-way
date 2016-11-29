@@ -9,7 +9,7 @@ In this lab you will bootstrap a 3 node etcd cluster. The following virtual mach
 ## Why
 
 All Kubernetes components are stateless which greatly simplifies managing a Kubernetes cluster. All state is stored
-in etcd, which is a database and must be treated specially. To limit the number of compute resource to complete this lab etcd is being installed on the Kubernetes controller nodes. In production environments etcd should be run on a dedicated set of machines for the 
+in etcd, which is a database and must be treated specially. To limit the number of compute resource to complete this lab etcd is being installed on the Kubernetes controller nodes. In production environments etcd should be run on a dedicated set of machines for the
 following reasons:
 
 * The etcd lifecycle is not tied to Kubernetes. We should be able to upgrade etcd independently of Kubernetes.
@@ -42,7 +42,7 @@ Download the official etcd release binaries from `coreos/etcd` GitHub project:
 wget https://github.com/coreos/etcd/releases/download/v3.0.10/etcd-v3.0.10-linux-amd64.tar.gz
 ```
 
-Extract and install the `etcd` server binary and the `etcdctl` command line client: 
+Extract and install the `etcd` server binary and the `etcdctl` command line client:
 
 ```
 tar -xvf etcd-v3.0.10-linux-amd64.tar.gz
@@ -79,7 +79,7 @@ ExecStart=/usr/bin/etcd --name ETCD_NAME \
   --listen-client-urls https://INTERNAL_IP:2379,http://127.0.0.1:2379 \
   --advertise-client-urls https://INTERNAL_IP:2379 \
   --initial-cluster-token etcd-cluster-0 \
-  --initial-cluster controller0=https://10.240.0.10:2380,controller1=https://10.240.0.11:2380,controller2=https://10.240.0.12:2380 \
+  --initial-cluster controller0=https://10.240.0.10:2380,controller1=https://10.240.1.10:2380,controller2=https://10.240.2.10:2380 \
   --initial-cluster-state new \
   --data-dir=/var/lib/etcd
 Restart=on-failure
@@ -163,8 +163,8 @@ etcdctl --ca-file=/etc/etcd/ca.pem cluster-health
 ```
 
 ```
-member 3a57933972cb5131 is healthy: got healthy result from https://10.240.0.12:2379
+member 3a57933972cb5131 is healthy: got healthy result from https://10.240.1.10:2379
 member f98dc20bce6225a0 is healthy: got healthy result from https://10.240.0.10:2379
-member ffed16798470cab5 is healthy: got healthy result from https://10.240.0.11:2379
+member ffed16798470cab5 is healthy: got healthy result from https://10.240.2.10:2379
 cluster is healthy
 ```
