@@ -150,15 +150,15 @@ cat > kubernetes-csr.json <<EOF
     "worker1",
     "worker2",
     "ip-10-240-0-20",
-    "ip-10-240-0-21",
-    "ip-10-240-0-22",
+    "ip-10-240-1-20",
+    "ip-10-240-2-20",
     "10.32.0.1",
     "10.240.0.10",
-    "10.240.0.11",
-    "10.240.0.12",
+    "10.240.1.10",
+    "10.240.2.10",
     "10.240.0.20",
-    "10.240.0.21",
-    "10.240.0.22",
+    "10.240.1.20",
+    "10.240.2.20",
     "${KUBERNETES_PUBLIC_ADDRESS}",
     "127.0.0.1"
   ],
@@ -233,8 +233,10 @@ The following command will:
 ```
 for host in ${KUBERNETES_HOSTS[*]}; do
   PUBLIC_IP_ADDRESS=$(aws ec2 describe-instances \
-    --filters "Name=tag:Name,Values=${host}" | \
-    jq -r '.Reservations[].Instances[].PublicIpAddress')
+    --filters "Name=tag:Name,Values=${host}" \
+    --output text \
+    --query 'Reservations[].Instances[].PublicIpAddress')
+  echo $host: $PUBLIC_IP_ADDRESS
   scp ca.pem kubernetes-key.pem kubernetes.pem \
     ubuntu@${PUBLIC_IP_ADDRESS}:~/
 done
