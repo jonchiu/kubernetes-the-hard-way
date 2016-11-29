@@ -112,7 +112,7 @@ INTERNAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
 Each etcd member must have a unique name within an etcd cluster. Set the etcd name:
 
 ```
-ETCD_NAME=controller$(echo $INTERNAL_IP | cut -c 11)
+ETCD_NAME=controller$(echo $INTERNAL_IP | cut -c 8)
 ```
 
 Substitute the etcd name and internal IP address:
