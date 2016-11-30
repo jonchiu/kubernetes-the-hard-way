@@ -26,7 +26,7 @@ Based on the above configuration each node will receive a `/24` subnet. For exam
 10.200.1.0/24
 10.200.2.0/24
 ...
-``` 
+```
 
 ## Get the Routing Table
 
@@ -42,9 +42,9 @@ kubectl get nodes \
 Output:
 
 ```
-10.240.0.20 10.200.0.0/24 
-10.240.0.21 10.200.1.0/24 
-10.240.0.22 10.200.2.0/24 
+10.240.0.20 10.200.0.0/24
+10.240.1.20 10.200.1.0/24
+10.240.2.20 10.200.2.0/24 
 ```
 
 ## Create Routes

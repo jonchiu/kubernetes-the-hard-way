@@ -2,7 +2,7 @@
 
 In this lab you will deploy the DNS add-on which is required for every Kubernetes cluster. Without the DNS add-on the following things will not work:
 
-* DNS based service discovery 
+* DNS based service discovery
 * DNS lookups from containers running in pods
 
 ## Cluster DNS Add-on
@@ -36,6 +36,6 @@ kubectl --namespace=kube-system get pods
 ```
 ```
 NAME                           READY     STATUS    RESTARTS   AGE
-kube-dns-v19-965658604-c8g5d   3/3       Running   0          49s
-kube-dns-v19-965658604-zwl3g   3/3       Running   0          49s
+kube-dns-v20-1485703853-amhw5   3/3       Running   0          49s
+kube-dns-v20-1485703853-y30jj   3/3       Running   0          49s
 ```
