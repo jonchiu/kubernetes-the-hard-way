@@ -46,16 +46,16 @@ sudo cp ca.pem kubernetes-key.pem kubernetes.pem /var/lib/kubernetes/
 Download the official Kubernetes release binaries:
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/kube-apiserver
+wget https://storage.googleapis.com/kubernetes-release/release/v1.4.4/bin/linux/amd64/kube-apiserver
 ```
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/kube-controller-manager
+wget https://storage.googleapis.com/kubernetes-release/release/v1.4.4/bin/linux/amd64/kube-controller-manager
 ```
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/kube-scheduler
+wget https://storage.googleapis.com/kubernetes-release/release/v1.4.4/bin/linux/amd64/kube-scheduler
 ```
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/kubectl
+wget https://storage.googleapis.com/kubernetes-release/release/v1.4.4/bin/linux/amd64/kubectl
 ```
 
 Install the Kubernetes binaries:
@@ -121,7 +121,7 @@ Move the authorization policy file into the Kubernetes configuration directory s
 sudo mv authorization-policy.jsonl /var/lib/kubernetes/
 ```
 
-### Create the systemd unit file 
+### Create the systemd unit file
 
 Capture the internal IP address:
 
@@ -161,7 +161,7 @@ ExecStart=/usr/bin/kube-apiserver \
   --etcd-cafile=/var/lib/kubernetes/ca.pem \
   --insecure-bind-address=0.0.0.0 \
   --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \
-  --etcd-servers=https://10.240.0.10:2379,https://10.240.0.11:2379,https://10.240.0.12:2379 \
+  --etcd-servers=https://10.240.0.10:2379,https://10.240.1.10:2379,https://10.240.2.10:2379 \
   --service-account-key-file=/var/lib/kubernetes/kubernetes-key.pem \
   --service-cluster-ip-range=10.32.0.0/24 \
   --service-node-port-range=30000-32767 \
@@ -300,7 +300,7 @@ etcd-2               Healthy   {"health": "true"}
 
 ## Setup Kubernetes API Server Frontend Load Balancer
 
-The virtual machines created in this tutorial will not have permission to complete this section. Run the following commands from the same place used to create the virtual machines for this tutorial. 
+The virtual machines created in this tutorial will not have permission to complete this section. Run the following commands from the same place used to create the virtual machines for this tutorial.
 
 ### GCE
 
