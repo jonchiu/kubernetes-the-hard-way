@@ -250,27 +250,12 @@ An ELB will be used to load balance traffic across the Kubernetes control plane.
 
 ```
 aws elb create-load-balancer \
-  --load-balancer-name kubernetes-us-west-2a \
+  --load-balancer-name kubernetes \
   --listeners "Protocol=TCP,LoadBalancerPort=6443,InstanceProtocol=TCP,InstancePort=6443" \
-  --subnets ${SUBNET_A_ID} \
+  --subnets ${SUBNET_A_ID} ${SUBNET_B_ID} ${SUBNET_C_ID} \
   --security-groups ${SECURITY_GROUP_ID}
 ```
 
-```
-aws elb create-load-balancer \
-  --load-balancer-name kubernetes-us-west-2b \
-  --listeners "Protocol=TCP,LoadBalancerPort=6443,InstanceProtocol=TCP,InstancePort=6443" \
-  --subnets ${SUBNET_B_ID} \
-  --security-groups ${SECURITY_GROUP_ID}
-```
-
-```
-aws elb create-load-balancer \
-  --load-balancer-name kubernetes-us-west-2c \
-  --listeners "Protocol=TCP,LoadBalancerPort=6443,InstanceProtocol=TCP,InstancePort=6443" \
-  --subnets ${SUBNET_C_ID} \
-  --security-groups ${SECURITY_GROUP_ID}
-```
 
 ## Provision Virtual Machines
 
