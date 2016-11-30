@@ -101,13 +101,13 @@ sudo tar -xvf cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz -C /opt/cni
 Download and install the Kubernetes worker binaries:
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/kubectl
+wget https://storage.googleapis.com/kubernetes-release/release/v1.4.4/bin/linux/amd64/kubectl
 ```
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/kube-proxy
+wget https://storage.googleapis.com/kubernetes-release/release/v1.4.4/bin/linux/amd64/kube-proxy
 ```
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/kubelet
+wget https://storage.googleapis.com/kubernetes-release/release/v1.4.4/bin/linux/amd64/kubelet
 ```
 
 ```
@@ -154,7 +154,7 @@ Requires=docker.service
 [Service]
 ExecStart=/usr/bin/kubelet \
   --allow-privileged=true \
-  --api-servers=https://10.240.0.10:6443,https://10.240.0.11:6443,https://10.240.0.12:6443 \
+  --api-servers=https://10.240.0.10:6443,https://10.240.1.10:6443,https://10.240.2.10:6443 \
   --cloud-provider= \
   --cluster-dns=10.32.0.10 \
   --cluster-domain=cluster.local \
@@ -168,7 +168,7 @@ ExecStart=/usr/bin/kubelet \
   --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \
   --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \
   --v=2
-  
+
 Restart=on-failure
 RestartSec=5
 
@@ -201,7 +201,7 @@ ExecStart=/usr/bin/kube-proxy \
   --kubeconfig=/var/lib/kubelet/kubeconfig \
   --proxy-mode=iptables \
   --v=2
-  
+
 Restart=on-failure
 RestartSec=5
 
