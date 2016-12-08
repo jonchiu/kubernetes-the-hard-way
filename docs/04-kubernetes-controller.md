@@ -157,6 +157,7 @@ ExecStart=/usr/bin/kube-apiserver \
   --authorization-mode=ABAC \
   --authorization-policy-file=/var/lib/kubernetes/authorization-policy.jsonl \
   --bind-address=0.0.0.0 \
+  --cloud-provider=aws \
   --enable-swagger-ui=true \
   --etcd-cafile=/var/lib/kubernetes/ca.pem \
   --insecure-bind-address=0.0.0.0 \
@@ -207,6 +208,7 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 [Service]
 ExecStart=/usr/bin/kube-controller-manager \
   --allocate-node-cidrs=true \
+  --cloud-provider=aws \
   --cluster-cidr=10.200.0.0/16 \
   --cluster-name=kubernetes \
   --leader-elect=true \
