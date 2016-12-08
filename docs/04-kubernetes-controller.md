@@ -254,7 +254,6 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
 ExecStart=/usr/bin/kube-scheduler \
-  --cloud-provider=aws \
   --leader-elect=true \
   --master=http://INTERNAL_IP:8080 \
   --v=2

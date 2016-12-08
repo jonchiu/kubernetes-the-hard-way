@@ -159,6 +159,7 @@ cat > kubernetes-csr.json <<EOF
     "10.240.0.20",
     "10.240.1.20",
     "10.240.2.20",
+    "*.us-west-2.compute.internal",
     "${KUBERNETES_PUBLIC_ADDRESS}",
     "127.0.0.1"
   ],
